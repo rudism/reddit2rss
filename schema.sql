@@ -5,5 +5,6 @@ CREATE TABLE links (
   title TEXT,
   author TEXT,
   url TEXT,
+  comments TEXT,
   published DATETIME
 );

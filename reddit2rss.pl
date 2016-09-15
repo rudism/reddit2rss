@@ -46,11 +46,12 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
           my $domain = $post->{domain};
           my $title = $post->{title};
           my $url = $post->{url};
+          my $comments = "https://reddit.com$post->{permalink}";
 
          my $exists = $dbh->selectrow_arrayref('SELECT id FROM links WHERE guid=? OR url=?', undef, $id, $url);
           if(!defined $exists){
             $newposts++;
-            $dbh->do('INSERT INTO links (feed, guid, title, author, url, published) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', undef, $feed, $id, $title, "$domain [$subreddit]", $url);
+            $dbh->do('INSERT INTO links (feed, guid, title, author, url, comments, published) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', undef, $feed, $id, $title, "$domain [$subreddit]", $url, $comments);
           }
         }
       }
@@ -64,7 +65,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
           language => 'en'
         );
         foreach my $feed(keys %{$config->{subs}}){
-          my $posts = $dbh->selectall_arrayref('SELECT guid, title, author, url, published FROM links WHERE feed=? ORDER BY published DESC LIMIT 20', undef, $feed);
+          my $posts = $dbh->selectall_arrayref('SELECT guid, title, author, url, comments, published FROM links WHERE feed=? ORDER BY published DESC LIMIT 20', undef, $feed);
 
           foreach my $post(@$posts){
             $rss->add_item(
@@ -72,7 +73,8 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
               title => $post->[1],
               author => "$config->{feedemail} ($post->[2])",
               link => $post->[3],
-              pubDate => $post->[4]
+              comments => $post->[4],
+              pubDate => $post->[5]
             );
           }
         }
