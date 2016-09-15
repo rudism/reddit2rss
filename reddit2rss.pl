@@ -7,12 +7,15 @@ use Reddit::Client;
 use DBI;
 use YAML::Tiny;
 use XML::RSS;
-use Data::Dumper;
+use Text::Unidecode;
 
-my $config = @{YAML::Tiny->read('config.yml')}[0];
+my $path = $0;
+$path =~ s/\/[^\/]+$//;
+
+my $config = @{YAML::Tiny->read("$path/config.yml")}[0];
 
 my $r = new Reddit::Client(
-  user_agent=>'reddit2pushover.pl/1.0 by /u/rudism'
+  user_agent=>'reddit2rss.pl/1.0 by /u/rudism'
 );
 
 my $dbpath = $config->{db};
@@ -44,13 +47,14 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
           my $id = $post->{id};
           my $subreddit = $post->{subreddit};
           my $domain = $post->{domain};
-          my $title = $post->{title};
+          my $title = unidecode($post->{title});
           my $url = $post->{url};
           my $comments = "https://reddit.com$post->{permalink}";
 
          my $exists = $dbh->selectrow_arrayref('SELECT id FROM links WHERE guid=? OR url=?', undef, $id, $url);
           if(!defined $exists){
             $newposts++;
+            print "$title ($domain [$subreddit])\n";
             $dbh->do('INSERT INTO links (feed, guid, title, author, url, comments, published) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', undef, $feed, $id, $title, "$domain [$subreddit]", $url, $comments);
           }
         }
@@ -59,6 +63,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
 
     if($newposts){
       foreach my $feed(keys %{$config->{subs}}){
+        print "Generating feed $feed...\n";
         my $rss = XML::RSS->new(version => '2.0');
         $rss->channel(
           title => ucfirst($feed),
