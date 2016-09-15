@@ -1,0 +1,21 @@
+interval: 600
+db: data.db
+outdir: /path/to/rss/output
+feedurl: https://reddit.com
+feedemail: no-reply@mydomain.com
+
+reddit:
+  client_id: REDDIT-CLIENT-ID
+  secret: REDDIT-SECRET
+  username: your-reddit-username
+  password: your-reddit-password
+
+subs:
+  news:
+    worldnews: 3000
+    news: 2000
+  gaming:
+    games: 2000
+    3ds: 200
+    xboxone: 1000
+    ps4: 1000
