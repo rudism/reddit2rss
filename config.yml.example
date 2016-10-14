@@ -1,7 +1,6 @@
 interval: 600
 db: data.db
 outdir: /path/to/rss/output
-feedurl: https://reddit.com
 feedemail: no-reply@mydomain.com
 
 reddit:

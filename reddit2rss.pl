@@ -8,11 +8,11 @@ use DBI;
 use YAML::Tiny;
 use XML::RSS;
 use Text::Unidecode;
+use Date::Parse;
+use Date::Format;
 use FindBin qw( $Bin );
 
 my $configpath = "$Bin/config.yml";
-
-print "$configpath\n";
 
 my $config = @{YAML::Tiny->read($configpath)}[0];
 
@@ -37,7 +37,9 @@ foreach my $feed(keys %{$config->{subs}}){
   }
 }
 
-my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
+my $interval = int($config->{interval});
+
+my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
   my $newposts = 0;
   foreach my $sub(keys %allsubs){
     my $posts = $r->fetch_links(subreddit=>$sub, limit=>40);
@@ -82,7 +84,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$config->{interval}, cb=> sub {
           author => "$config->{feedemail} ($post->[2])",
           link => $post->[3],
           comments => $post->[4],
-          pubDate => $post->[5]
+          pubDate => time2str('%a, %d %b %Y %X %Z', str2time($post->[5]))
         );
       }
 
