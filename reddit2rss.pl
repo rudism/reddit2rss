@@ -10,6 +10,7 @@ use XML::RSS;
 use Text::Unidecode;
 use Date::Parse;
 use Date::Format;
+use Data::Dumper;
 use FindBin qw( $Bin );
 
 my $configpath = "$Bin/config.yml";
@@ -53,13 +54,14 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
           my $domain = $post->{domain};
           my $title = unidecode($post->{title});
           my $url = $post->{url};
+          my $thumbnail = $post->{thumbnail};
           my $comments = "https://reddit.com$post->{permalink}";
 
           my $exists = $dbh->selectrow_arrayref('SELECT id FROM links WHERE guid=? OR url=?', undef, $id, $url);
           if(!defined $exists){
             $newposts++;
             print "$feed: $title ($domain [$subreddit])\n";
-            $dbh->do('INSERT INTO links (feed, guid, title, author, url, comments, published) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', undef, $feed, $id, $title, "$domain [$subreddit]", $url, $comments);
+            $dbh->do('INSERT INTO links (feed, guid, title, author, url, comments, thumbnail, published) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)', undef, $feed, $id, $title, "$domain [$subreddit]", $url, $comments, $thumbnail);
           }
         }
       }
@@ -75,7 +77,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
         title => ucfirst($feed),
         language => 'en'
       );
-      my $posts = $dbh->selectall_arrayref('SELECT guid, title, author, url, comments, published FROM links WHERE feed=? ORDER BY published DESC LIMIT 20', undef, $feed);
+      my $posts = $dbh->selectall_arrayref('SELECT guid, title, author, url, comments, thumbnail, published FROM links WHERE feed=? ORDER BY published DESC LIMIT 20', undef, $feed);
 
       foreach my $post(@$posts){
         $rss->add_item(
@@ -84,7 +86,8 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
           author => "$config->{feedemail} ($post->[2])",
           link => $post->[3],
           comments => $post->[4],
-          pubDate => time2str('%a, %d %b %Y %X %Z', str2time($post->[5]))
+          enclosure => {url => $post->[5], type => 'image/jpeg'},
+          pubDate => time2str('%a, %d %b %Y %X %Z', str2time($post->[6]))
         );
       }
 
