@@ -90,7 +90,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
       foreach my $post(@$posts){
         my $text = $post->[8] ? $post->[8] : '';
         my $description = <<EOF;
-<img src="$post->[7]"/>
+<img style="max-height: 500px; max-width: 500px;" src="$post->[7]"/>
 
 $text
 EOF
