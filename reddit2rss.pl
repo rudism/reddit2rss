@@ -93,6 +93,8 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
 <img style="max-height: 500px; max-width: 500px;" src="$post->[7]"/>
 
 $text
+
+<a href="$post->[6]">Comments</a>
 EOF
         $description =~ s/\n/<br\/>/g;
         my $item = $rss->add_item($post->[5]);
