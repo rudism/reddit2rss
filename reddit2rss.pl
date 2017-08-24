@@ -53,9 +53,9 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
     my $position = 0;
     foreach my $post(@$posts){
       foreach my $feed(keys %{$config->{subs}}){
-        if(!exists $config->{subs}->{$feed}->{$post->{subreddit}}){ next; }
+        if(!exists $config->{subs}->{$feed}->{lc($post->{subreddit})}){ next; }
 
-        if(!$post->{is_self} && $position < $config->{subs}->{$feed}->{$post->{subreddit}}){
+        if(!$post->{is_self} && $position < $config->{subs}->{$feed}->{lc($post->{subreddit})}){
           my $url = $post->{url};
           my $id = $post->{id};
 
@@ -64,7 +64,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
             my $safeurl = quotemeta($url);
             my $page = encode('utf8', `curl --referer https://www.google.com/ -A "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)" -sL $safeurl | unfluff`);
             my $pagedata = $json->decode($page);
-            my $subreddit = $post->{subreddit};
+            my $subreddit = lc($post->{subreddit});
             my $author = length($pagedata->{author}) > 0 ? unidecode($pagedata->{author}[0]) : undef;
             my $domain = $post->{domain};
             my $title = unidecode($post->{title});
