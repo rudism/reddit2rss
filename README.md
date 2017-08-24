@@ -1,6 +1,6 @@
 # Reddit2RSS
 
-You can use this to generate RSS feeds from multireddits, including only posts that exceed a specified score threshold.
+You can use this to generate RSS feeds from multireddits, including only posts that meet a certain popularity threshold.
 
 ## Setup
 
@@ -23,21 +23,21 @@ $ vim config.yml
 - `feedurl` is the url that will be used for the RSS files
 - `feedemail` will be used as the feed and author email address in the RSS files
 - the `reddit` section contains your Reddit API keys and credentials
-- the `subs` section defines the subreddits and score thresholds for the RSS feeds you want to generate
+- the `subs` section defines the subreddits and thresholds for the RSS feeds you want to generate
 
 ## Feed Configuration
 
 ```yml
 subs:
   feedname1:
-    subreddit1: 1000
-    subreddit2: 2000
+    subreddit1: 10
+    subreddit2: 5
   feedname2:
-    subreddit1: 3000
-    subreddit3: 4000
+    subreddit1: 20
+    subreddit3: 2
 ```
 
-The above config would cause two feeds to be generated. `feedname1.xml` will contain all posts in `subreddit1` that meet or exceed a score of 1000 and all posts in `subreddit2` that meet or exceed a score of 2000. `feedname2.xml` will contain all posts in `subreddit1` that meet or exceed a score of 3000 and all posts in `subreddit3` that meet or exceed a score of 4000. You can create as many feeds as you like in this manner.
+The above config would cause two feeds to be generated. `feedname1.xml` will contain all posts in `subreddit1` that break into the top 10 at any point, and all posts in `subreddit2` that break into the top 5 posts. `feedname2.xml` will contain all posts in `subreddit1` that meet or break into the top 20, and all posts in `subreddit3` that break into the top 2. You can create as many feeds as you like in this manner. The maximum threshold limit you can set is 100.
 
 ## Running
 

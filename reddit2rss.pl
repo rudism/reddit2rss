@@ -36,7 +36,10 @@ $r->get_token(
 my %allsubs = ();
 foreach my $feed(keys %{$config->{subs}}){
   foreach my $sub(keys %{$config->{subs}->{$feed}}){
-    $allsubs{$sub} = 1;
+    my $threshold = $config->{subs}->{$feed}->{$sub};
+    if(!exists $allsubs{$sub} || $allsubs{$sub} < $threshold) {
+      $allsubs{$sub} = $threshold;
+    }
   }
 }
 
@@ -46,12 +49,13 @@ my $json = JSON::XS->new->utf8;
 my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
   my $newposts = 0;
   foreach my $sub(keys %allsubs){
-    my $posts = $r->fetch_links(subreddit=>$sub, limit=>40);
+    my $posts = $r->fetch_links(subreddit=>$sub, view=>$r->VIEW_TOP, limit=>$allsubs{$sub});
+    my $position = 0;
     foreach my $post(@$posts){
       foreach my $feed(keys %{$config->{subs}}){
         if(!exists $config->{subs}->{$feed}->{$post->{subreddit}}){ next; }
 
-        if(!$post->{is_self} && $post->{score} >= $config->{subs}->{$feed}->{$post->{subreddit}}){
+        if(!$post->{is_self} && $position < $config->{subs}->{$feed}->{$post->{subreddit}}){
           my $url = $post->{url};
           my $id = $post->{id};
 
@@ -74,6 +78,7 @@ my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
           }
         }
       }
+      $position++;
     }
     sleep 2; # need to keep it under 30 api calls per minute
   }
