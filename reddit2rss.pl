@@ -49,7 +49,12 @@ my $json = JSON::XS->new->utf8;
 my $f = AnyEvent->timer(after=>0, interval=>$interval, cb=> sub {
   my $newposts = 0;
   foreach my $sub(keys %allsubs){
-    my $posts = $r->fetch_links(subreddit=>$sub, view=>$r->VIEW_HOT, limit=>$allsubs{$sub});
+    my $posts;
+    eval {
+      $posts = $r->fetch_links(subreddit=>$sub, view=>$r->VIEW_HOT, limit=>$allsubs{$sub});
+    } or do {
+      $posts = [];
+    };
     my $position = 0;
     foreach my $post(@$posts){
       foreach my $feed(keys %{$config->{subs}}){
